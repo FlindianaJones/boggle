@@ -18,14 +18,18 @@ func (c *MockWordContainer) ContainsWord(word string) bool {
 	}
 }
 
+func (c *MockWordContainer) GetPrintableBoard() string {
+	return "WHAT ARE YOU DOING CALLING THIS???"
+}
+
 func TestWordInBoard(t *testing.T) {
 	mockBoard := &MockWordContainer{}
 	testWords := []string{"alms", "brow", "clam", "dyes", "loam", "mom", "lame", "solar", "world", "morl", "sos", "zither", "qualm"}
 
 	for i, word := range testWords {
 		WordInBoard(mockBoard, word)
-		expected := i + 1
-		if mockBoard.called != expected {
+		eßpected := i + 1
+		if mockBoard.called != eßpected {
 			t.Errorf("Didn't call ContainsWord on the board!")
 		}
 	}

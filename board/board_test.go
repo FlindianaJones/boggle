@@ -64,8 +64,8 @@ func TestBoardGenerator(t *testing.T) {
 	gotBoard := GenerateBoard(MockLetterGen{}, boardSize)
 	expectedBoard := Board{Layout: [][]rune{{'a', 'a', 'a', 'a'}, {'a', 'a', 'a', 'a'}, {'a', 'a', 'a', 'a'}, {'a', 'a', 'a', 'a'}}}
 
-	if !reflect.DeepEqual(gotBoard, expectedBoard) {
-		t.Errorf("Should produce a board that is all a's. Got %v but expected %v", gotBoard, expectedBoard)
+	if !reflect.DeepEqual(gotBoard.Layout, expectedBoard.Layout) {
+		t.Errorf("Should produce a board that is all a's. Got %v but expected %v", gotBoard.Layout, expectedBoard.Layout)
 	}
 }
 
@@ -134,7 +134,7 @@ func cmpNode(a, b node, dontRecurse bool) bool {
 func TestPrintBoard(t *testing.T) {
 	board := Board{Layout: [][]rune{{'a', 'a'}, {'a', 'a'}}}
 
-	printyBoard := GetPrintableBoard(board)
+	printyBoard := board.GetPrintableBoard()
 	expectedPrintyBoard := "a a\na a\n"
 
 	if printyBoard != expectedPrintyBoard {

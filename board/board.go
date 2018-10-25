@@ -8,6 +8,7 @@ import (
 // WordContainer is a container of words
 type WordContainer interface {
 	ContainsWord(string) bool
+	GetPrintableBoard() string
 }
 
 // Board type def
@@ -47,6 +48,7 @@ func GenerateBoard(gen Generator, size int) Board {
 			board.Layout[row][col] = gen.GenLetter()
 		}
 	}
+	CreateBoardGraph(&board)
 	return board
 }
 
@@ -132,12 +134,12 @@ func intMax(a, b int) int {
 }
 
 // GetPrintableBoard is a terrible name, it gets a printyBoard!
-func GetPrintableBoard(board Board) string {
+func (b Board) GetPrintableBoard() string {
 	output := ""
-	size := len(board.Layout[0])
+	size := len(b.Layout[0])
 	for r := 0; r < size; r++ {
 		for c := 0; c < size; c++ {
-			output += string(board.Layout[r][c]) + " "
+			output += string(b.Layout[r][c]) + " "
 		}
 		output = output[:len(output)-1] + "\n"
 	}

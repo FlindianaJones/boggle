@@ -7,9 +7,18 @@ type Boggle struct {
 	board board.WordContainer
 }
 
+// CreateBoggle creates a... uh... you know.
+func CreateBoggle(size int) Boggle {
+	return Boggle{board: board.GenerateBoard(board.RandomLetter{}, size)}
+}
+
 // WordInBoard finds a word in the board, and returns false if it can't
 func WordInBoard(board board.WordContainer, word string) bool {
 	return board.ContainsWord(word)
+}
+
+func (b Boggle) PrettyPrintBoard() string {
+	return b.board.GetPrintableBoard()
 }
 
 // ScoreWords scores words if they exist in the board
