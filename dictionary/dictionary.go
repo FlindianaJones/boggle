@@ -34,6 +34,7 @@ func getValidWords(words []string) []string {
 		case v := <-doneChannel:
 			responses++
 			if v != "" {
+				//fmt.Println("received word", v)
 				responseList = append(responseList, v)
 			}
 			if responses == len(words) {
@@ -46,9 +47,11 @@ func getValidWords(words []string) []string {
 }
 
 func checkWord(word string, doneChannel chan string) {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 
 	defer cancel()
+
+	fmt.Println("sending word", word)
 
 	resp, err := http.DefaultClient.Get(fmt.Sprintf("%sdictionary?word=%s", dictionaryURL, word))
 	if err != nil {
@@ -61,7 +64,7 @@ func checkWord(word string, doneChannel chan string) {
 	if err != nil {
 		panic(err)
 	}
-
+	fmt.Println("received word", word)
 	if strings.Contains(string(body), "true") {
 		doneChannel <- word
 	} else {

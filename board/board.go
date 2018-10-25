@@ -5,13 +5,15 @@ import (
 	"time"
 )
 
-// Board type def
-type Board [][]rune
+// WordContainer is a container of words
+type WordContainer interface {
+	ContainsWord(string) bool
+}
 
-// Boggle the mind
-type Boggle struct {
-	board Board
-	graph Node
+// Board type def
+type Board struct {
+	Layout [][]rune
+	graph  node
 }
 
 // Generator is an interface for injecting into board creation
@@ -19,10 +21,10 @@ type Generator interface {
 	GenLetter() rune
 }
 
-// Node is a node
-type Node struct {
+// node is a node
+type node struct {
 	label rune
-	links []*Node
+	links []*node
 	used  bool
 }
 
@@ -38,45 +40,27 @@ func (r RandomLetter) GenLetter() rune {
 
 // GenerateBoard hooray!
 func GenerateBoard(gen Generator, size int) Board {
-	board := make([][]rune, size)
-	for row := range board {
-		board[row] = make([]rune, size)
-		for col := range board[row] {
-			board[row][col] = gen.GenLetter()
+	board := Board{Layout: make([][]rune, size)}
+	for row := range board.Layout {
+		board.Layout[row] = make([]rune, size)
+		for col := range board.Layout[row] {
+			board.Layout[row][col] = gen.GenLetter()
 		}
 	}
 	return board
 }
 
-// GetWordScore implements simple Boggle scoring algorithm
-func GetWordScore(word string) int {
-	length := len(word)
-	switch {
-	case length < 3:
-		return 0
-	case length < 5:
-		return 1
-	case length < 6:
-		return 2
-	case length < 7:
-		return 3
-	case length < 8:
-		return 5
-	default:
-		return 11
-	}
+// ContainsWord if it returns a boolean true
+func (b Board) ContainsWord(word string) bool {
+	return b.graph.findInNode(word)
 }
 
-// WordInBoard finds a word in the board, and returns false if it can't
-func WordInBoard(board Boggle, word string) bool {
-	return findInNode(&board.graph, word)
-}
-
-func findInNode(node *Node, word string) bool {
+// FindInNode finds first of string in a linked node and rest of string in linked node's linked nodes if needed
+func (node *node) findInNode(word string) bool {
 	node.used = true
 	for _, link := range node.links {
 		if !link.used && link.label == rune(word[0]) {
-			if len(word) == 1 || findInNode(link, word[1:]) {
+			if len(word) == 1 || link.findInNode(word[1:]) {
 				node.used = false
 				return true
 			}
@@ -106,22 +90,22 @@ func getNodeNeighborIndexes(row, col, size int) [][]int {
 	return result
 }
 
-// GetBoardGraph gets a board graph
-func GetBoardGraph(board Board) Node {
-	size := len(board[0])
-	rootNode := Node{
+// CreateBoardGraph gets a board graph
+func CreateBoardGraph(board *Board) {
+	size := len(board.Layout[0])
+	rootNode := node{
 		label: '\x00',
 		used:  false,
-		links: []*Node{},
+		links: []*node{},
 	}
-	nodeBoard := make([][]Node, size)
+	nodeBoard := make([][]node, size)
 	for r := 0; r < size; r++ {
 		//need to pre-initialize this, because otherwise lookaheads will crash
-		nodeBoard[r] = make([]Node, size)
+		nodeBoard[r] = make([]node, size)
 	}
 	for r := 0; r < size; r++ {
 		for c := 0; c < size; c++ {
-			nodeBoard[r][c].label = board[r][c]
+			nodeBoard[r][c].label = board.Layout[r][c]
 
 			for _, coords := range getNodeNeighborIndexes(r, c, size) {
 				//fmt.Println(r, c, coords, nodeBoard)
@@ -130,7 +114,7 @@ func GetBoardGraph(board Board) Node {
 			rootNode.links = append(rootNode.links, &nodeBoard[r][c])
 		}
 	}
-	return rootNode
+	board.graph = rootNode
 }
 
 func intMin(a, b int) int {
@@ -150,23 +134,12 @@ func intMax(a, b int) int {
 // GetPrintableBoard is a terrible name, it gets a printyBoard!
 func GetPrintableBoard(board Board) string {
 	output := ""
-	size := len(board[0])
+	size := len(board.Layout[0])
 	for r := 0; r < size; r++ {
 		for c := 0; c < size; c++ {
-			output += string(board[r][c]) + " "
+			output += string(board.Layout[r][c]) + " "
 		}
 		output = output[:len(output)-1] + "\n"
 	}
 	return output
-}
-
-// ScoreWords scores words if they exist in the board
-func ScoreWords(boggle Boggle, words []string) int {
-	score := 0
-	for _, word := range words {
-		if WordInBoard(boggle, word) {
-			score += GetWordScore(word)
-		}
-	}
-	return score
 }
