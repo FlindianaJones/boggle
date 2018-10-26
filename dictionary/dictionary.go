@@ -16,14 +16,14 @@ import (
 const dictionaryURL = "https://whispering-falls-21983.herokuapp.com/"
 
 func getValidWords(words []string) []string {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 
 	defer cancel()
 
 	doneChannel := make(chan string)
 
 	for _, word := range words {
-		go checkWord(word, doneChannel)
+		go CheckWord(word, doneChannel)
 	}
 
 	responseList := []string{}
@@ -46,12 +46,13 @@ func getValidWords(words []string) []string {
 	}
 }
 
-func checkWord(word string, doneChannel chan string) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+// CheckWord a single word against remote API
+func CheckWord(word string, doneChannel chan string) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
 	defer cancel()
 
-	fmt.Println("sending word", word)
+	//fmt.Println("sending word", word)
 
 	resp, err := http.DefaultClient.Get(fmt.Sprintf("%sdictionary?word=%s", dictionaryURL, word))
 	if err != nil {
@@ -64,8 +65,9 @@ func checkWord(word string, doneChannel chan string) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("received word", word)
+	//fmt.Println("received word", word, "and body", string(body))
 	if strings.Contains(string(body), "true") {
+		//fmt.Println("Writing to the done channel")
 		doneChannel <- word
 	} else {
 		doneChannel <- ""
@@ -74,7 +76,9 @@ func checkWord(word string, doneChannel chan string) {
 	for {
 		select {
 		case <-ctx.Done():
-			panic(errors.New("HTTP Request timed out"))
+			if len(body) == 0 {
+				panic(fmt.Errorf("HTTP Request timed out while checking %s", word))
+			}
 		}
 	}
 }

@@ -77,7 +77,7 @@ func Test_checkWord(t *testing.T) {
 
 	testChan := make(chan string)
 
-	go checkWord("test", testChan)
+	go CheckWord("test", testChan)
 
 	got := <-testChan
 
