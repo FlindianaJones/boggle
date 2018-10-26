@@ -1,22 +1,37 @@
 package boggle
 
-import "github.com/FlindianaJones/boggle/board"
+import (
+	"strings"
+
+	"github.com/FlindianaJones/boggle/board"
+	"github.com/FlindianaJones/boggle/dicer"
+)
 
 // Boggle the mind
 type Boggle struct {
 	board board.WordContainer
 }
 
-// CreateBoggle creates a... uh... you know.
-func CreateBoggle(size int) Boggle {
-	return Boggle{board: board.GenerateBoard(board.RandomLetter{}, size)}
+// CreateBoggle creates a board and graph, with specified generator and size
+func CreateBoggle(diceType string, size int) Boggle {
+	t := strings.ToUpper(diceType)
+	switch t {
+	case "NEW":
+		return Boggle{board: board.GenerateBoard(&dicer.PresetDicer{SourceDice: dicer.NewDice}, size)}
+	case "CLASSIC":
+		return Boggle{board: board.GenerateBoard(&dicer.PresetDicer{SourceDice: dicer.ClassicDice}, size)}
+	default:
+		return Boggle{board: board.GenerateBoard(board.RandomLetter{}, size)}
+	}
 }
 
 // WordInBoard finds a word in the board, and returns false if it can't
 func WordInBoard(board board.WordContainer, word string) bool {
+	word = strings.ToUpper(word)
 	return board.ContainsWord(word)
 }
 
+// PrettyPrintBoard returns a string representing an easily printable output of the board's runes
 func (b Boggle) PrettyPrintBoard() string {
 	return b.board.GetPrintableBoard()
 }

@@ -3,6 +3,8 @@ package board
 import (
 	"math/rand"
 	"time"
+
+	"github.com/FlindianaJones/boggle/dicer"
 )
 
 // WordContainer is a container of words
@@ -15,11 +17,6 @@ type WordContainer interface {
 type Board struct {
 	Layout [][]rune
 	graph  node
-}
-
-// Generator is an interface for injecting into board creation
-type Generator interface {
-	GenLetter() rune
 }
 
 // node is a node
@@ -35,12 +32,12 @@ type RandomLetter struct{}
 // GenLetter returns a single random letter
 func (r RandomLetter) GenLetter() rune {
 	rand.Seed(time.Now().UnixNano())
-	char := rand.Intn(26) + 97
+	char := rand.Intn(26) + 65
 	return rune(char)
 }
 
 // GenerateBoard hooray!
-func GenerateBoard(gen Generator, size int) Board {
+func GenerateBoard(gen dicer.Generator, size int) Board {
 	board := Board{Layout: make([][]rune, size)}
 	for row := range board.Layout {
 		board.Layout[row] = make([]rune, size)
